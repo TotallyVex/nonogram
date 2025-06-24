@@ -128,7 +128,7 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
         {puzzle[0].split("").map((header, idx) => (
           <div
             key={`header-${idx}`}
-            className="w-auto h-auto border border-gray-300 bg-indigo-100 flex flex-col items-center justify-end row-span-2 col-span-1 py-2"
+            className="w-auto h-auto border border-gray-300 bg-indigo-100 flex flex-col items-center justify-end row-span-2 col-span-1 py-2 text-black"
           >
             {colSequences[idx].map((seq, seqIdx) => (
               <span key={`col-seq-${idx}-${seqIdx}`}>{seq}</span>
@@ -138,7 +138,7 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
 
         {puzzle.map((row, rowIdx) => (
           <Fragment key={`row-${rowIdx}`}>
-            <div className="flex items-center justify-end gap-2 px-2 h-auto col-span-2 border border-gray-300 bg-indigo-100">
+            <div className="flex items-center justify-end gap-2 px-2 h-auto col-span-2 border border-gray-300 bg-indigo-100 text-black">
               {rowSequences[rowIdx].map((seq, seqIdx) => (
                 <span key={`row-seq-${rowIdx}-${seqIdx}`}>{seq}</span>
               ))}
