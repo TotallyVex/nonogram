@@ -1,7 +1,7 @@
 import PlayingField from "@/components/playingField";
 
 export default function Home() {
-  const data = [
+  const data: string[] = [
     "XXXXXOOXXX",
     "XXXXOOXOXX",
     "XXXOOXXOOX",
@@ -16,7 +16,7 @@ export default function Home() {
 
   return (
     <main className="w-screen h-screen flex items-center justify-center">
-      <PlayingField data={data} />
+      <PlayingField puzzle={data} />
     </main>
   );
 }
