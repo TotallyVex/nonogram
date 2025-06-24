@@ -4,11 +4,24 @@ import { CellState } from "@/types";
 import { Fragment, useState } from "react";
 import Cell from "./cell";
 
-export default function PlayingField({ puzzle }: { puzzle: string[] }) {
+export default function PlayingField({
+  puzzle,
+  startingGrid,
+}: {
+  puzzle: string[];
+  startingGrid: string[];
+}) {
   const [puzzleState, setPuzzleState] = useState<CellState[][]>(
-    Array.from({ length: puzzle.length }, () =>
-      Array.from({ length: puzzle[0].length }, () => CellState.EMPTY)
-    )
+    startingGrid?.map((row) => {
+      return Array.from({ length: row.length }, (v, i) => {
+        if (row[i] === "?") return CellState.EMPTY;
+        if (row[i] === "X") return CellState.BLOCKED;
+        return CellState.FILLED;
+      });
+    }) ||
+      Array.from({ length: puzzle.length }, () =>
+        Array(puzzle[0].length).fill(CellState.EMPTY)
+      )
   );
 
   const [mistakeCount, setMistakeCount] = useState<number>(0);
@@ -67,9 +80,16 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
   const handleReset = () => {
     setMistakeCount(0);
     setPuzzleState(
-      Array.from({ length: puzzle.length }, () =>
-        Array.from({ length: puzzle[0].length }, () => CellState.EMPTY)
-      )
+      startingGrid?.map((row) => {
+        return Array.from({ length: row.length }, (v, i) => {
+          if (row[i] === "?") return CellState.EMPTY;
+          if (row[i] === "X") return CellState.BLOCKED;
+          return CellState.FILLED;
+        });
+      }) ||
+        Array.from({ length: puzzle.length }, () =>
+          Array(puzzle[0].length).fill(CellState.EMPTY)
+        )
     );
     setShowGameWon(false);
     setShowGameOver(false);
@@ -83,7 +103,7 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
     <div className="flex flex-col items-center justify-center w-full gap-8">
       {showGameWon && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-white w-96 h-64 rounded-2xl flex items-center justify-center flex-col gap-8">
+          <div className="bg-white w-96 h-64 rounded-2xl flex items-center justify-center flex-col gap-8 text-black">
             <h3 className="text-4xl font-bold">Game Won!</h3>
             <button
               className="bg-indigo-400 px-4 py-2 rounded-md cursor-pointer hover:bg-indigo-500 transition-colors duration-300"
@@ -96,7 +116,7 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
       )}
       {showGameOver && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-white w-96 h-64 rounded-2xl flex items-center justify-center flex-col gap-8">
+          <div className="bg-white w-96 h-64 rounded-2xl flex items-center justify-center flex-col gap-8 text-black">
             <h3 className="text-4xl font-bold">Game over!</h3>
             <p>You made too many mistakes!</p>
             <button
@@ -123,12 +143,12 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
         }}
       >
         {/* keep bottom left corner free */}
-        <div className="w-auto h-auto col-span-2 row-span-2" />
+        <div className="col-span-2 row-span-2" />
 
         {puzzle[0].split("").map((header, idx) => (
           <div
             key={`header-${idx}`}
-            className="w-auto h-auto border border-gray-300 bg-indigo-100 flex flex-col items-center justify-end row-span-2 col-span-1 py-2 text-black"
+            className="border border-gray-300 bg-indigo-100 flex flex-col items-center justify-end row-span-2 col-span-1 text-black text-sm max-h-[100px] max-w-[50px] overflow-hidden"
           >
             {colSequences[idx].map((seq, seqIdx) => (
               <span key={`col-seq-${idx}-${seqIdx}`}>{seq}</span>
@@ -138,7 +158,7 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
 
         {puzzle.map((row, rowIdx) => (
           <Fragment key={`row-${rowIdx}`}>
-            <div className="flex items-center justify-end gap-2 px-2 h-auto col-span-2 border border-gray-300 bg-indigo-100 text-black">
+            <div className="flex items-center justify-end gap-1 h-auto col-span-2 border border-gray-300 bg-indigo-100 text-black text-sm max-w-[100px] max-h-[50px] overflow-hidden">
               {rowSequences[rowIdx].map((seq, seqIdx) => (
                 <span key={`row-seq-${rowIdx}-${seqIdx}`}>{seq}</span>
               ))}
