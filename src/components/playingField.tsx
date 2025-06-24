@@ -11,6 +11,8 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
     )
   );
 
+  const [mistakeCount, setMistakeCount] = useState<number>(0);
+
   const updateCellState = (row: number, col: number, state: CellState) => {
     setPuzzleState((prevState) => {
       const newState = [...prevState];
@@ -19,8 +21,12 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
     });
   };
 
+  const registerMistake = () => {
+    setMistakeCount((prevCount) => prevCount + 1);
+  };
+
   const handleReset = () => {
-    console.log("Resetting puzzle state");
+    setMistakeCount(0);
     setPuzzleState(
       Array.from({ length: puzzle.length }, () =>
         Array.from({ length: puzzle[0].length }, () => CellState.EMPTY)
@@ -36,6 +42,7 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
       >
         <span className="text-lg font-semibold mb-4">Reset Puzzle</span>
       </button>
+      <div className="text-lg font-semibold">Mistakes: {mistakeCount}</div>
       <div
         className="grid"
         style={{
@@ -69,6 +76,7 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
                 }
                 updateCellState={updateCellState}
                 currentState={puzzleState[rowIdx][colIdx]}
+                registerMistake={registerMistake}
                 key={`cell-${rowIdx}-${colIdx}`}
               />
             ))}

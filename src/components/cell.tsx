@@ -1,5 +1,6 @@
 import { CellState } from "@/types";
 import { cn } from "@sglara/cn";
+import { useState } from "react";
 
 export default function Cell({
   correctState,
@@ -7,13 +8,17 @@ export default function Cell({
   colIdx,
   updateCellState,
   currentState,
+  registerMistake,
 }: {
   correctState: CellState;
   rowIdx: number;
   colIdx: number;
   updateCellState: (row: number, col: number, state: CellState) => void;
   currentState: CellState;
+  registerMistake: () => void;
 }) {
+  const [showError, setShowError] = useState<boolean>(false);
+
   const handleLeftClick = () => {
     if (currentState !== CellState.EMPTY) return;
 
@@ -22,7 +27,11 @@ export default function Cell({
       return;
     }
 
-    console.log("Wrong cell clicked");
+    setShowError(true);
+    registerMistake();
+    setTimeout(() => {
+      setShowError(false);
+    }, 950);
   };
 
   const handleRightClick = (e: React.MouseEvent) => {
@@ -33,7 +42,12 @@ export default function Cell({
       updateCellState(rowIdx, colIdx, CellState.BLOCKED);
       return;
     }
-    console.log("Wrong cell clicked");
+
+    setShowError(true);
+    registerMistake();
+    setTimeout(() => {
+      setShowError(false);
+    }, 950);
   };
 
   return (
@@ -46,6 +60,9 @@ export default function Cell({
       onContextMenu={handleRightClick}
     >
       {currentState === CellState.BLOCKED ? "X" : ""}
+      {showError && (
+        <div className="bg-red-500 w-full h-full animate-fade-out" />
+      )}
     </div>
   );
 }
