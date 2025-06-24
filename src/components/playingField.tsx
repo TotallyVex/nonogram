@@ -1,7 +1,7 @@
 "use client";
 
 import { CellState } from "@/types";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import Cell from "./cell";
 
 export default function PlayingField({ puzzle }: { puzzle: string[] }) {
@@ -12,43 +12,56 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
   );
 
   const [mistakeCount, setMistakeCount] = useState<number>(0);
-  const [rowSequences, setRowSequences] = useState<number[][]>([]);
-  const [colSequences, setColSequences] = useState<number[][]>([]);
+  const [showGameOver, setShowGameOver] = useState<boolean>(false);
+  const [showGameWon, setShowGameWon] = useState<boolean>(false);
 
-  useEffect(() => {
-    const calculateSequences = (row: string) => {
-      const sequences: number[] = [];
-      let count = 0;
-      for (const char of row) {
-        if (char === "O") {
-          count++;
-        } else if (count > 0) {
-          sequences.push(count);
-          count = 0;
-        }
+  let rowSequences: number[][] = [];
+  let colSequences: number[][] = [];
+
+  const calculateSequences = (row: string) => {
+    const sequences: number[] = [];
+    let count = 0;
+    for (const char of row) {
+      if (char === "O") {
+        count++;
+      } else if (count > 0) {
+        sequences.push(count);
+        count = 0;
       }
-      if (count > 0) sequences.push(count);
-      return sequences;
-    };
+    }
+    if (count > 0) sequences.push(count);
+    return sequences;
+  };
 
-    setRowSequences(puzzle.map(calculateSequences));
-    setColSequences(
-      Array.from({ length: puzzle[0].length }, (_, colIdx) =>
-        calculateSequences(puzzle.map((row) => row[colIdx]).join(""))
-      )
-    );
-  }, [puzzle]);
+  rowSequences = puzzle.map(calculateSequences);
+  colSequences = Array.from({ length: puzzle[0].length }, (_, colIdx) =>
+    calculateSequences(puzzle.map((row) => row[colIdx]).join(""))
+  );
 
   const updateCellState = (row: number, col: number, state: CellState) => {
-    setPuzzleState((prevState) => {
-      const newState = [...prevState];
-      newState[row][col] = state;
-      return newState;
-    });
+    const newState = [...puzzleState];
+    newState[row][col] = state;
+    setPuzzleState(newState);
+
+    const isSolved = puzzle.every((row, rowIdx) =>
+      row.split("").every((cell, colIdx) => {
+        if (cell === "O") {
+          return puzzleState[rowIdx][colIdx] === CellState.FILLED;
+        }
+        return true;
+      })
+    );
+
+    if (isSolved) {
+      setShowGameWon(true);
+    }
   };
 
   const registerMistake = () => {
     setMistakeCount((prevCount) => prevCount + 1);
+    if (mistakeCount + 1 >= 3) {
+      setShowGameOver(true);
+    }
   };
 
   const handleReset = () => {
@@ -58,10 +71,43 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
         Array.from({ length: puzzle[0].length }, () => CellState.EMPTY)
       )
     );
+    setShowGameWon(false);
+    setShowGameOver(false);
+  };
+
+  const handleNextPuzzle = () => {
+    setShowGameWon(false);
   };
 
   return (
     <div className="flex flex-col items-center justify-center w-full gap-8">
+      {showGameWon && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white w-96 h-64 rounded-2xl flex items-center justify-center flex-col gap-8">
+            <h3 className="text-4xl font-bold">Game Won!</h3>
+            <button
+              className="bg-indigo-400 px-4 py-2 rounded-md cursor-pointer hover:bg-indigo-500 transition-colors duration-300"
+              onClick={handleNextPuzzle}
+            >
+              <span className="text-lg font-semibold mb-4">Next Puzzle</span>
+            </button>
+          </div>
+        </div>
+      )}
+      {showGameOver && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white w-96 h-64 rounded-2xl flex items-center justify-center flex-col gap-8">
+            <h3 className="text-4xl font-bold">Game over!</h3>
+            <p>You made too many mistakes!</p>
+            <button
+              className="bg-indigo-400 px-4 py-2 rounded-md cursor-pointer hover:bg-indigo-500 transition-colors duration-300"
+              onClick={handleReset}
+            >
+              <span className="text-lg font-semibold mb-4">Reset Puzzle</span>
+            </button>
+          </div>
+        </div>
+      )}
       <button
         onClick={handleReset}
         className="bg-indigo-400 px-4 py-2 rounded-md cursor-pointer hover:bg-indigo-500 transition-colors duration-300"
