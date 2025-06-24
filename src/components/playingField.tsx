@@ -1,7 +1,7 @@
 "use client";
 
 import { CellState } from "@/types";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Cell from "./cell";
 
 export default function PlayingField({ puzzle }: { puzzle: string[] }) {
@@ -12,6 +12,32 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
   );
 
   const [mistakeCount, setMistakeCount] = useState<number>(0);
+  const [rowSequences, setRowSequences] = useState<number[][]>([]);
+  const [colSequences, setColSequences] = useState<number[][]>([]);
+
+  useEffect(() => {
+    const calculateSequences = (row: string) => {
+      const sequences: number[] = [];
+      let count = 0;
+      for (const char of row) {
+        if (char === "O") {
+          count++;
+        } else if (count > 0) {
+          sequences.push(count);
+          count = 0;
+        }
+      }
+      if (count > 0) sequences.push(count);
+      return sequences;
+    };
+
+    setRowSequences(puzzle.map(calculateSequences));
+    setColSequences(
+      Array.from({ length: puzzle[0].length }, (_, colIdx) =>
+        calculateSequences(puzzle.map((row) => row[colIdx]).join(""))
+      )
+    );
+  }, [puzzle]);
 
   const updateCellState = (row: number, col: number, state: CellState) => {
     setPuzzleState((prevState) => {
@@ -35,7 +61,7 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full gap-8">
+    <div className="flex flex-col items-center justify-center w-full gap-8">
       <button
         onClick={handleReset}
         className="bg-indigo-400 px-4 py-2 rounded-md cursor-pointer hover:bg-indigo-500 transition-colors duration-300"
@@ -56,16 +82,20 @@ export default function PlayingField({ puzzle }: { puzzle: string[] }) {
         {puzzle[0].split("").map((header, idx) => (
           <div
             key={`header-${idx}`}
-            className="w-auto h-auto border border-gray-300 flex items-center justify-center row-span-2 col-span-1"
+            className="w-auto h-auto border border-gray-300 bg-indigo-100 flex flex-col items-center justify-end row-span-2 col-span-1 py-2"
           >
-            test
+            {colSequences[idx].map((seq, seqIdx) => (
+              <span key={`col-seq-${idx}-${seqIdx}`}>{seq}</span>
+            ))}
           </div>
         ))}
 
         {puzzle.map((row, rowIdx) => (
           <Fragment key={`row-${rowIdx}`}>
-            <div className="flex items-center justify-center h-auto col-span-2 border border-gray-300">
-              test
+            <div className="flex items-center justify-end gap-2 px-2 h-auto col-span-2 border border-gray-300 bg-indigo-100">
+              {rowSequences[rowIdx].map((seq, seqIdx) => (
+                <span key={`row-seq-${rowIdx}-${seqIdx}`}>{seq}</span>
+              ))}
             </div>
             {row.split("").map((cell, colIdx) => (
               <Cell
